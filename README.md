@@ -6,6 +6,7 @@
 ---
 
 **Group:** Private Static
+
 **Members:**
 - Bautista, Wimari
 - Bragais, Nhiko
@@ -17,7 +18,7 @@
 
 This is a "Dockerized" version of a procedural level generator tool for the game Bathala. You can run it as a single server or as a cluster that can auto-scale.
 
-Forked from: [Corridor](https://github.com/ImCBM/Corridor-MapTileGenerator)
+> This project is a **fork** of [Corridor](https://github.com/ImCBM/Corridor-MapTileGenerator)
 
 ## Features
 
