@@ -1,0 +1,40 @@
+{
+  "name": "procgen-phaser-ts",
+  "version": "1.0.0",
+  "description": "Procedural Level Generator using TypeScript and Phaser.js",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "webpack serve --mode development",
+    "build": "webpack --mode production",
+    "clean": "rimraf dist",
+    "docker:build": "docker build -t procgen-phaser:latest .",
+    "docker:dev": "docker build -f Dockerfile.dev -t procgen-phaser:dev .",
+    "docker:run": "docker run -d --name procgen-app -p 8080:80 procgen-phaser:latest",
+    "docker:run-dev": "docker run -d --name procgen-dev -p 3011:3011 -v \"$(pwd):/app\" -v /app/node_modules procgen-phaser:dev",
+    "docker:stop": "docker stop procgen-app procgen-dev || true && docker rm procgen-app procgen-dev || true",
+    "docker:compose": "docker-compose up --build",
+    "docker:compose-dev": "docker-compose --profile dev up --build"
+  },
+  "keywords": [
+    "phaser",
+    "typescript",
+    "procedural",
+    "generation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "html-webpack-plugin": "^5.5.3",
+    "rimraf": "^5.0.1",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.6",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "delaunator": "^5.0.0",
+    "phaser": "^3.70.0"
+  }
+}

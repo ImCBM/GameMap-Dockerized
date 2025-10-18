@@ -1,0 +1,25 @@
+{
+  "name": "procgen-autoscaler",
+  "version": "1.0.0",
+  "description": "Intelligent Auto-Scaling Load Balancer for Procedural Game Servers",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^2.0.6",
+    "dockerode": "^4.0.2",
+    "ws": "^8.14.2",
+    "axios": "^1.6.0"
+  },
+  "keywords": [
+    "docker",
+    "autoscaling",
+    "load-balancer",
+    "game-server"
+  ],
+  "author": "",
+  "license": "MIT"
+}

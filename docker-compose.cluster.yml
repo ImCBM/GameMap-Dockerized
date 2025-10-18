@@ -1,0 +1,74 @@
+services:
+  # Persistent Game Server 1 (Always Running)
+  procgen-server-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: procgen-game-server-1
+    restart: unless-stopped
+    environment:
+      - SERVER_ID=1
+      - SERVER_TYPE=persistent
+      - NODE_ENV=production
+    labels:
+      - "autoscaler.persistent=true"
+      - "autoscaler.server_id=1"
+    networks:
+      - procgen-cluster
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Auto-Scaling Load Balancer with Intelligence
+  smart-loadbalancer:
+    build:
+      context: ./docker/autoscaler
+      dockerfile: Dockerfile
+    ports:
+      - "80:3000"        # Main entry point
+      - "8090:8090"      # Admin dashboard
+    container_name: procgen-smart-lb
+    restart: unless-stopped
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - BASE_IMAGE=procgen-phaser:latest
+      - MIN_SERVERS=1                    # Keep server 1 always running
+      - MAX_SERVERS=10                   # Maximum auto-scaled servers
+      - INACTIVITY_SHUTDOWN=10           # Shutdown after 10 seconds inactive
+      - CLEANUP_DELETE=30                # Delete container after 30 seconds
+      - SERVER_PORT_START=8081          # Auto servers start from port 8081
+      - PERSISTENT_SERVER_URL=http://procgen-server-1:80
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Docker control
+      - ./docker/autoscaler/config:/app/config     # Configuration
+    networks:
+      - procgen-cluster
+    depends_on:
+      - procgen-server-1
+
+  # Monitoring Dashboard
+  monitoring-dashboard:
+    build:
+      context: ./docker/monitoring
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    container_name: procgen-monitor
+    restart: unless-stopped
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LOADBALANCER_URL=http://smart-loadbalancer:8090
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - procgen-cluster
+    profiles:
+      - monitoring
+
+networks:
+  procgen-cluster:
+    driver: bridge

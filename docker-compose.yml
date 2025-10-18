@@ -1,0 +1,36 @@
+services:
+  # Main application service
+  procgen-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    container_name: procgen-phaser-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - procgen-network
+    
+  # Development service (alternative to production)
+  procgen-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3011:3011"
+    container_name: procgen-phaser-dev
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - procgen-network
+    profiles:
+      - dev
+
+networks:
+  procgen-network:
+    driver: bridge
