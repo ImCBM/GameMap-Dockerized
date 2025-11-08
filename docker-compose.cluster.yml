@@ -36,8 +36,9 @@ services:
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - BASE_IMAGE=procgen-phaser:latest
-      - MIN_SERVERS=1                    # Keep server 1 always running
-      - MAX_SERVERS=10                   # Maximum auto-scaled servers
+      - MIN_SERVERS=0                    # No minimum auto servers
+      - MAX_SERVERS=50                   # Increased for more players
+      - MAX_PLAYERS_PER_SERVER=1         # 1 player per server (dedicated)
       - INACTIVITY_SHUTDOWN=10           # Shutdown after 10 seconds inactive
       - CLEANUP_DELETE=30                # Delete container after 30 seconds
       - SERVER_PORT_START=8081          # Auto servers start from port 8081

@@ -13,6 +13,24 @@
             overflow: hidden;
         }
         
+        #session-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(46, 204, 113, 0.9);
+            padding: 8px 12px;
+            border-radius: 6px;
+            color: white;
+            z-index: 1001;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        #session-info.lobby {
+            background: rgba(241, 196, 15, 0.9);
+        }
+        
         #ui-container {
             position: absolute;
             top: 10px;
@@ -414,6 +432,105 @@
             isDragging = false;
             document.body.style.userSelect = '';
         });
+    })();
+    </script>
+    
+    <!-- Session Info Display -->
+    <div id="session-info">
+        <span id="session-status">🔄 Checking session...</span>
+    </div>
+    
+    <!-- Session Management Script -->
+    <script>
+    (function() {
+        // Extract session info from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('sessionId');
+        const playerId = urlParams.get('playerId');
+        const error = urlParams.get('error');
+        
+        const sessionInfo = document.getElementById('session-info');
+        const sessionStatus = document.getElementById('session-status');
+        
+        if (error) {
+            sessionStatus.textContent = '❌ Server assignment failed';
+            sessionInfo.className = 'error';
+            console.error('Server assignment error:', error);
+            return;
+        }
+        
+        if (sessionId && playerId) {
+            // We have a dedicated server session
+            sessionStatus.textContent = `🎮 Dedicated Server | Player: ${playerId.substring(0, 12)}...`;
+            sessionInfo.className = '';
+            console.log('Session Info:', { sessionId, playerId });
+            
+            // Send heartbeats to keep the server alive
+            let heartbeatInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/gameserver/api/player/heartbeat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Session-ID': sessionId
+                        },
+                        body: JSON.stringify({ sessionId })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Heartbeat failed');
+                    }
+                    
+                    console.log('💓 Heartbeat sent successfully');
+                    
+                } catch (error) {
+                    console.warn('⚠️ Heartbeat failed:', error);
+                    // If heartbeat fails consistently, could redirect back to main entry
+                }
+            }, 5000); // Every 5 seconds
+            
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                clearInterval(heartbeatInterval);
+                navigator.sendBeacon('/gameserver/api/player/leave', JSON.stringify({ sessionId }));
+            });
+            
+            // Notify the game engine about the session
+            window.gameSession = {
+                sessionId,
+                playerId,
+                isDedicated: true
+            };
+            
+        } else {
+            // We're in the lobby/persistent server
+            sessionStatus.textContent = '🏠 Lobby Server';
+            sessionInfo.className = 'lobby';
+            
+            // Add a "Get Dedicated Server" button
+            const getServerBtn = document.createElement('button');
+            getServerBtn.textContent = '🚀 Get My Server';
+            getServerBtn.style.cssText = `
+                background: #3498db; 
+                color: white; 
+                border: none; 
+                padding: 4px 8px; 
+                margin-left: 8px; 
+                border-radius: 4px; 
+                cursor: pointer; 
+                font-size: 11px;
+            `;
+            getServerBtn.onclick = () => {
+                window.location.href = '/game';
+            };
+            sessionInfo.appendChild(getServerBtn);
+            
+            window.gameSession = {
+                sessionId: null,
+                playerId: null,
+                isDedicated: false
+            };
+        }
     })();
     </script>
 </body>

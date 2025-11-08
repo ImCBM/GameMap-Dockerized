@@ -7,7 +7,7 @@ REM ASCII Art Header
 :show_header
 echo.
 echo    ╔═══════════════════════════════════════════════╗
-echo    ║           🎮 GAME SERVER CLUSTER              ║
+echo    ║           🎮 PLAYER-DEDICATED SERVERS         ║
 echo    ║         Auto-Scaling Management Console       ║
 echo    ╚═══════════════════════════════════════════════╝
 echo.
@@ -15,40 +15,52 @@ exit /b 0
 
 REM Start the auto-scaling cluster
 :start_cluster
-echo [INFO] Starting Auto-Scaling Game Server Cluster...
+echo [INFO] Starting Player-Dedicated Auto-Scaling Cluster...
 
 echo [INFO] Building Docker images...
 docker-compose -f docker-compose.cluster.yml build
 
-echo [INFO] Starting persistent server and intelligent load balancer...
+echo [INFO] Starting persistent lobby server and player-dedicated load balancer...
 docker-compose -f docker-compose.cluster.yml up -d
 
-echo [SUCCESS] 🚀 Cluster started successfully!
+echo [SUCCESS] 🚀 Player-Dedicated Cluster started successfully!
 echo.
-echo 📍 Access Points:
-echo   🎮 Main Game Entry:    http://localhost:80
-echo   🏠 Persistent Server:  http://localhost:8080
-echo   📊 Load Balancer API:  http://localhost:8090
+echo 📍 Single Entry Point:
+echo   🎮 MAIN GAME HUB:      http://localhost:80
+echo   (Players just visit this one URL!)
 echo.
-echo ⚙️ Auto-Scaling Rules:
-echo   • Server 1 (port 8080): Always running (persistent)
-echo   • Auto servers: Created on demand, shutdown after 10s inactive
-echo   • Containers deleted after 30s in shutdown state
-echo   • Maximum 10 auto-scaled servers
+echo 📊 Additional Access Points:
+echo   🏠 Persistent Lobby:   http://localhost:8080 (fallback)
+echo   📊 Load Balancer API:  http://localhost:8090 (admin)
+echo   📈 Monitoring Dashboard: Use --profile monitoring for http://localhost:3001
+echo.
+echo ⚙️ How it works:
+echo   1. Players visit http://localhost:80
+echo   2. Click "Play Game" to get dedicated server automatically
+echo   3. System creates new container and redirects player
+echo   4. Server stays alive while player is active
+echo   5. Auto-cleanup after 10s inactive + 30s deletion
+echo   6. No complex setup needed - just one URL!
 exit /b 0
 
 REM Start with monitoring
 :start_monitoring
-echo [INFO] Starting cluster with monitoring dashboard...
+echo [INFO] Starting cluster with player monitoring dashboard...
 docker-compose -f docker-compose.cluster.yml --profile monitoring up -d --build
 
-echo [SUCCESS] 🚀 Cluster + Monitoring started!
+echo [SUCCESS] 🚀 Player-Dedicated Cluster + Monitoring started!
 echo.
 echo 📍 Access Points:
 echo   🎮 Main Game Entry:    http://localhost:80
-echo   🏠 Persistent Server:  http://localhost:8080
-echo   📊 Monitoring Dashboard: http://localhost:3001
+echo   🏠 Persistent Lobby:   http://localhost:8080
+echo   📊 Player Monitor:     http://localhost:3001
 echo   ⚙️ Load Balancer API:  http://localhost:8090
+echo.
+echo 📈 Monitoring Features:
+echo   • Real-time player capacity tracking
+echo   • Individual server status and player counts
+echo   • Resource utilization graphs
+echo   • Server creation/destruction activity
 exit /b 0
 
 REM Show status
